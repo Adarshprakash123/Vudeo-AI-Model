@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import api from "@/lib/api/axios";
 
 const initialState = {
   items: [],
@@ -9,51 +8,71 @@ const initialState = {
   error: null
 };
 
+const aspectMap = {
+  "1:1": "900/900",
+  "16:9": "1280/720",
+  "9:16": "720/1280",
+  "4:5": "800/1000"
+};
+
+function buildMockImage({ prompt, aspectRatio = "1:1", source = "generated", imageUrl }) {
+  const createdAt = new Date().toISOString();
+  const size = aspectMap[aspectRatio] || aspectMap["1:1"];
+  const seed = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
+  return {
+    _id: `mock-${seed}`,
+    prompt: prompt?.trim() || "Untitled media",
+    imageUrl: imageUrl || `https://picsum.photos/seed/${encodeURIComponent(seed)}/${size}`,
+    aspectRatio,
+    source,
+    isFavorite: false,
+    createdAt
+  };
+}
+
 export const fetchImages = createAsyncThunk(
   "images/fetchAll",
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await api.get("/images");
-      return data.images;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to load images");
-    }
+  async () => {
+    return [];
   }
 );
 
 export const generateImage = createAsyncThunk(
   "images/generate",
-  async (payload, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post("/images/generate", payload);
-      return data.image;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Image generation failed");
-    }
+  async (payload) => {
+    return buildMockImage({
+      prompt: payload.prompt,
+      aspectRatio: payload.aspectRatio,
+      source: "generated"
+    });
   }
 );
 
 export const toggleFavorite = createAsyncThunk(
   "images/favorite",
-  async (id, { rejectWithValue }) => {
-    try {
-      const { data } = await api.patch(`/images/favorite/${id}`);
-      return data.image;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to update favorite");
+  async (id, { getState, rejectWithValue }) => {
+    const item = getState().images.items.find((entry) => entry._id === id);
+
+    if (!item) {
+      return rejectWithValue("Failed to update favorite");
     }
+
+    return {
+      ...item,
+      isFavorite: !item.isFavorite
+    };
   }
 );
 
 export const uploadMockImage = createAsyncThunk(
   "images/upload",
-  async (payload, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post("/images/upload", payload);
-      return data.image;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Mock upload failed");
-    }
+  async (payload) => {
+    return buildMockImage({
+      prompt: payload.prompt || "Uploaded reference media",
+      imageUrl: payload.imageUrl,
+      source: "uploaded"
+    });
   }
 );
 
