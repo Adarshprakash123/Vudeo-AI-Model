@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import clsx from "clsx";
-import { Compass, FolderOpen, Heart, ImageIcon, Star, Upload, Video } from "lucide-react";
+import { Compass, FolderOpen, Heart, ImageIcon, Search, Star, Upload, Video, X } from "lucide-react";
 
 const primaryItems = [
   { label: "Explore", icon: Compass },
-  { label: "Images", icon: ImageIcon, active: true },
+  { label: "Images", icon: ImageIcon },
   { label: "Videos", icon: Video },
   { label: "Likes", icon: Heart }
 ];
@@ -17,35 +17,66 @@ const libraryItems = [
   { label: "Uploads", icon: Upload }
 ];
 
-export function Sidebar({ user, isAuthenticated = false }) {
-  return (
-    <aside className="hidden w-[220px] shrink-0 flex-col border-r border-line bg-[#101010] xl:flex">
+export function Sidebar({
+  user,
+  isAuthenticated = false,
+  activeItem = "Images",
+  onItemSelect,
+  mobileOpen = false,
+  onClose
+}) {
+  const handleSelect = (label) => {
+    onItemSelect?.(label);
+    onClose?.();
+  };
+
+  const content = (
+    <>
       <div className="border-b border-line px-4 py-5">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-accent text-base font-bold text-black">
-            Q
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-accent text-base font-bold text-black">
+              Q
+            </div>
+            <div>
+              <p className="text-sm font-semibold tracking-tight">QRT Studio</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold tracking-tight">QRT Studio</p>
-          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-[#171717] text-subtle transition hover:text-white xl:hidden"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
       <div className="flex-1 px-3 py-4">
-        <div className="rounded-[16px] border border-line bg-muted px-3 py-2.5 text-xs text-subtle">
-          Search
+        <div className="rounded-[20px] border border-line bg-[#151515] p-1">
+          <div className="flex items-center gap-2 rounded-[16px] bg-[#1a1a1a] px-3 py-2.5">
+            <Search className="h-4 w-4 text-subtle" />
+            <input
+              type="text"
+              placeholder="Search"
+              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-subtle"
+            />
+          </div>
         </div>
 
         <nav className="mt-6 space-y-1">
           {primaryItems.map((item) => {
             const Icon = item.icon;
+            const isActive = activeItem === item.label;
             return (
               <button
                 key={item.label}
                 type="button"
+                onClick={() => handleSelect(item.label)}
                 className={clsx(
                   "flex w-full items-center gap-3 rounded-[16px] px-3 py-2.5 text-left text-[13px] transition",
-                  item.active ? "bg-[#1f1f1f] text-white" : "text-subtle hover:bg-muted hover:text-white"
+                  isActive ? "bg-[#1f1f1f] text-white" : "text-subtle hover:bg-muted hover:text-white"
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -66,7 +97,13 @@ export function Sidebar({ user, isAuthenticated = false }) {
               <button
                 key={item.label}
                 type="button"
-                className="flex w-full items-center gap-3 rounded-[16px] px-3 py-2.5 text-left text-[13px] text-subtle transition hover:bg-muted hover:text-white"
+                onClick={() => handleSelect(item.label)}
+                className={clsx(
+                  "flex w-full items-center gap-3 rounded-[16px] px-3 py-2.5 text-left text-[13px] transition",
+                  activeItem === item.label
+                    ? "bg-[#1f1f1f] text-white"
+                    : "text-subtle hover:bg-muted hover:text-white"
+                )}
               >
                 <Icon className="h-4 w-4" />
                 <span>{item.label}</span>
@@ -78,14 +115,11 @@ export function Sidebar({ user, isAuthenticated = false }) {
 
       <div className="border-t border-line px-4 py-4">
         {isAuthenticated ? (
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-xs font-semibold text-black">
-              {user?.name?.[0] || "Q"}
-            </div>
-            <div>
-              <p className="text-[13px] font-medium text-white">{user?.name || "QRT User"}</p>
-              <p className="text-[11px] text-subtle">{user?.email || "creative@qrt.studio"}</p>
-            </div>
+          <div className="space-y-1 text-center">
+            <p className="text-[14px] font-medium text-white">{user?.name || "QRT User"}</p>
+            <p className="break-all text-[12px] text-[#8a8a8a]">
+              {user?.email || "creative@qrt.studio"}
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -107,6 +141,31 @@ export function Sidebar({ user, isAuthenticated = false }) {
           </div>
         )}
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      <aside className="hidden w-[220px] shrink-0 flex-col border-r border-line bg-[#101010] xl:flex">
+        {content}
+      </aside>
+
+      <div
+        className={clsx(
+          "fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition xl:hidden",
+          mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        )}
+        onClick={onClose}
+      />
+
+      <aside
+        className={clsx(
+          "fixed inset-y-0 left-0 z-50 flex w-[86vw] max-w-[340px] flex-col border-r border-line bg-[#101010] shadow-[0_20px_60px_rgba(0,0,0,0.45)] transition-transform duration-300 xl:hidden",
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {content}
+      </aside>
+    </>
   );
 }

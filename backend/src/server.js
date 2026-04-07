@@ -7,7 +7,7 @@ const morgan = require("morgan");
 const connectDatabase = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const imageRoutes = require("./routes/imageRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
+// const paymentRoutes = require("./routes/paymentRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
@@ -32,7 +32,8 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
-app.use("/api/payments", paymentRoutes);
+// PayU is temporarily disabled.
+// app.use("/api/payments", paymentRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

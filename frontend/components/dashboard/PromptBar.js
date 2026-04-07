@@ -56,17 +56,17 @@ export function PromptBar({ isAuthenticated = false }) {
   };
 
   return (
-    <div className="mx-auto h-[120px] w-full max-w-[1280px]">
-      <div className="flex h-full flex-col justify-between rounded-[24px] border border-line bg-[#171717]/95 px-4 py-3.5 backdrop-blur md:px-5 md:py-4">
+    <div className="mx-auto w-full max-w-[1280px]">
+      <div className="flex min-h-[96px] flex-col justify-between rounded-[24px] border border-line bg-[#171717]/95 px-4 py-3 backdrop-blur md:px-5 md:py-3.5">
         <textarea
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           rows={1}
           placeholder="Describe an image..."
-          className="min-h-[28px] w-full resize-none bg-transparent text-sm leading-6 text-white placeholder:text-[#555] md:text-base"
+          className="min-h-[26px] w-full resize-none bg-transparent text-sm leading-6 text-white placeholder:text-[#555] md:text-base"
         />
 
-        <div className="mt-3 flex items-center justify-between gap-3">
+        <div className="mt-2.5 flex items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
